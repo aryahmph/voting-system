@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8.0.26
+    environment:
+      - MYSQL_ROOT_PASSWORD=aryahmph
+      - MYSQL_DATABASE=voting_system
+    ports:
+      - "3306:3306"
