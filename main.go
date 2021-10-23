@@ -75,6 +75,7 @@ func main() {
 	admins.Delete("/:id", adminController.Delete)
 	admins.Post("/generate-token", adminController.GenerateVoterToken)
 
+	voters.Get("/:token", voterController.Login)
 	voters.Post("/:token", voterController.Vote)
 
 	err = app.Listen(":8080")

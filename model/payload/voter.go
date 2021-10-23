@@ -22,3 +22,11 @@ type VoteRequest struct {
 	ID          uint32 `validate:"required"`
 	CandidateID uint32 `json:"candidate_id" validate:"required"`
 }
+
+type VoterLoginResponse struct {
+	ID       uint32 `json:"id"`
+	Name     string `json:"name"`
+	NIM      string `json:"nim"`
+	Email    string `json:"email"`
+	HasVoted bool   `json:"has_voted"`
+}

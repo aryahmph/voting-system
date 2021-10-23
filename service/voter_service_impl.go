@@ -61,3 +61,23 @@ func (service *VoterServiceImpl) Vote(ctx context.Context, request payload.VoteR
 
 	service.VoterRepository.UpdateCandidate(ctx, service.DB, request.ID, request.CandidateID)
 }
+
+func (service *VoterServiceImpl) FindByID(ctx context.Context, id uint32) payload.VoterLoginResponse {
+	voter, err := service.VoterRepository.FindByID(ctx, service.DB, id)
+	if err != nil {
+		panic(exception.NotFoundError)
+	}
+
+	hasVoted := false
+	if voter.CandidateID.Valid {
+		hasVoted = true
+	}
+
+	return payload.VoterLoginResponse{
+		ID:       voter.ID,
+		Name:     voter.Name,
+		NIM:      voter.NIM,
+		Email:    voter.Email,
+		HasVoted: hasVoted,
+	}
+}

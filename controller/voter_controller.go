@@ -50,3 +50,31 @@ func (controller *VoterController) Vote(ctx *fiber.Ctx) error {
 		Data:   nil,
 	})
 }
+
+func (controller *VoterController) Login(ctx *fiber.Ctx) error {
+	token := ctx.Params("token")
+
+	// Validate Token
+	validateToken, err := controller.AuthService.ValidateToken(token)
+	if err != nil {
+		panic(exception.UnauthorizedError)
+	}
+	claims, ok := validateToken.Claims.(jwt.MapClaims)
+	if !ok || !validateToken.Valid {
+		panic(exception.UnauthorizedError)
+	}
+
+	id := uint32(claims["id"].(float64))
+	role := claims["role"].(string)
+	if role != "voter" {
+		panic(exception.UnauthorizedError)
+	}
+
+	response := controller.VoterService.FindByID(ctx.Context(), id)
+
+	return ctx.JSON(payload.WebResponse{
+		Code:   200,
+		Status: http.StatusText(200),
+		Data:   response,
+	})
+}
