@@ -51,9 +51,13 @@ func main() {
 	authService := service.NewAuthServiceImpl(jwtConfig)
 	authMiddleware := middleware.NewAuthMiddleware(authService)
 
+	voterRepository := repository.NewVoterRepositoryImpl()
+	voterService := service.NewVoterServiceImpl(db, validate, voterRepository, authService)
+	voterController := controller.NewVoterController(voterService, authService)
+
 	adminRepository := repository.NewAdminRepositoryImpl()
 	adminService := service.NewAdminServiceImpl(db, validate, adminRepository)
-	adminController := controller.NewAdminController(adminService, authService)
+	adminController := controller.NewAdminController(adminService, voterService, authService)
 
 	app := fiber.New(configuration.NewFiberConfig())
 	app.Use(logger.New())
@@ -61,6 +65,7 @@ func main() {
 
 	api := app.Group("/api")
 	admins := api.Group("/admins", authMiddleware)
+	voters := api.Group("/voters")
 
 	api.Post("/secret-sessions", adminController.Login)
 
@@ -68,6 +73,9 @@ func main() {
 	admins.Get("/", adminController.List)
 	admins.Get("/:id", adminController.Get)
 	admins.Delete("/:id", adminController.Delete)
+	admins.Post("/generate-token", adminController.GenerateVoterToken)
+
+	voters.Post("/:token", voterController.Vote)
 
 	err = app.Listen(":8080")
 	exception.PanicIfError(err)

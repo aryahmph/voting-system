@@ -11,11 +11,12 @@ import (
 
 type AdminController struct {
 	AdminService service.AdminService
+	VoterService service.VoterService
 	AuthService  service.AuthService
 }
 
-func NewAdminController(adminService service.AdminService, authService service.AuthService) *AdminController {
-	return &AdminController{AdminService: adminService, AuthService: authService}
+func NewAdminController(adminService service.AdminService, voterService service.VoterService, authService service.AuthService) *AdminController {
+	return &AdminController{AdminService: adminService, VoterService: voterService, AuthService: authService}
 }
 
 func (controller *AdminController) Create(ctx *fiber.Ctx) error {
@@ -103,6 +104,26 @@ func (controller *AdminController) Login(ctx *fiber.Ctx) error {
 	exception.PanicIfError(err)
 	response.Token = token
 
+	return ctx.JSON(payload.WebResponse{
+		Code:   200,
+		Status: http.StatusText(200),
+		Data:   response,
+	})
+}
+
+func (controller *AdminController) GenerateVoterToken(ctx *fiber.Ctx) error {
+	userAuth := ctx.UserContext().Value("userAuth").(payload.AuthMiddleware)
+	if userAuth.Role != "admin" {
+		panic(exception.UnauthorizedError)
+	}
+	_ = controller.AdminService.FindById(ctx.Context(), userAuth.ID)
+
+	var request payload.GenerateVoteRequest
+	err := ctx.BodyParser(&request)
+	exception.PanicIfError(err)
+	request.AdminID = userAuth.ID
+
+	response := controller.VoterService.GenerateVote(ctx.Context(), request)
 	return ctx.JSON(payload.WebResponse{
 		Code:   200,
 		Status: http.StatusText(200),

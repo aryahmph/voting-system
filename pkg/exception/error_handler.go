@@ -9,6 +9,15 @@ import (
 )
 
 func ErrorHandler(ctx *fiber.Ctx, err error) error {
+	// Unauthorized error
+	if ok := errors.Is(UnauthorizedError, err); ok {
+		return ctx.Status(http.StatusUnauthorized).JSON(payload.WebResponse{
+			Code:   http.StatusUnauthorized,
+			Status: http.StatusText(http.StatusUnauthorized),
+			Error:  err.Error(),
+		})
+	}
+
 	// NotFound error
 	if ok := errors.Is(NotFoundError, err); ok {
 		return ctx.Status(http.StatusNotFound).JSON(payload.WebResponse{
@@ -27,7 +36,7 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 		})
 	}
 
-	// AlreadyExist error
+	// MethodNotAllowed error
 	if ok := errors.Is(MethodNotAllowedError, err); ok {
 		return ctx.Status(http.StatusMethodNotAllowed).JSON(payload.WebResponse{
 			Code:   http.StatusMethodNotAllowed,
