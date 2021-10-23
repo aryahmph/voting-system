@@ -28,8 +28,7 @@ func (service *AdminServiceImpl) Create(ctx context.Context, request payload.Cre
 	// Check NIM
 	_, err = service.AdminRepository.FindByNIM(ctx, service.DB, request.NIM)
 	if err == nil {
-		err = exception.AlreadyExistError
-		panic(err)
+		panic(exception.AlreadyExistError)
 	}
 
 	// Hashing password
@@ -49,8 +48,7 @@ func (service *AdminServiceImpl) Delete(ctx context.Context, id uint32) {
 	// Check ID
 	_, err := service.AdminRepository.FindById(ctx, service.DB, id)
 	if err != nil {
-		err = exception.NotFoundError
-		panic(err)
+		panic(exception.NotFoundError)
 	}
 
 	service.AdminRepository.Delete(ctx, service.DB, id)
@@ -73,8 +71,7 @@ func (service *AdminServiceImpl) FindAll(ctx context.Context) []payload.GetAdmin
 func (service *AdminServiceImpl) FindById(ctx context.Context, id uint32) payload.GetAdminResponse {
 	admin, err := service.AdminRepository.FindById(ctx, service.DB, id)
 	if err != nil {
-		err = exception.NotFoundError
-		panic(err)
+		panic(exception.NotFoundError)
 	}
 
 	return payload.GetAdminResponse{

@@ -27,6 +27,15 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 		})
 	}
 
+	// AlreadyExist error
+	if ok := errors.Is(MethodNotAllowedError, err); ok {
+		return ctx.Status(http.StatusMethodNotAllowed).JSON(payload.WebResponse{
+			Code:   http.StatusMethodNotAllowed,
+			Status: http.StatusText(http.StatusMethodNotAllowed),
+			Error:  err.Error(),
+		})
+	}
+
 	// Validation error
 	if exception, ok := err.(validator.ValidationErrors); ok {
 		return ctx.Status(http.StatusUnprocessableEntity).JSON(payload.WebResponse{
