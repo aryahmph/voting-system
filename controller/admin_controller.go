@@ -10,19 +10,20 @@ import (
 
 type AdminController struct {
 	AdminService service.AdminService
+	AuthService  service.AuthService
 }
 
-func NewAdminController(adminService service.AdminService) *AdminController {
-	return &AdminController{AdminService: adminService}
-}
-
-func (controller *AdminController) Route(app *fiber.App) {
-	app.Post("/api/admins", controller.Create)
-	app.Get("/api/admins", controller.List)
-	app.Delete("/api/admins/:id", controller.Delete)
+func NewAdminController(adminService service.AdminService, authService service.AuthService) *AdminController {
+	return &AdminController{AdminService: adminService, AuthService: authService}
 }
 
 func (controller *AdminController) Create(ctx *fiber.Ctx) error {
+	userAuth := ctx.UserContext().Value("userAuth").(payload.AuthMiddleware)
+	if userAuth.Role != "super-admin" {
+		panic(exception.UnauthorizedError)
+	}
+	_ = controller.AdminService.FindById(ctx.Context(), userAuth.ID)
+
 	var request payload.CreateAdminRequest
 	err := ctx.BodyParser(&request)
 	exception.PanicIfError(err)
@@ -36,6 +37,12 @@ func (controller *AdminController) Create(ctx *fiber.Ctx) error {
 }
 
 func (controller *AdminController) Delete(ctx *fiber.Ctx) error {
+	userAuth := ctx.UserContext().Value("userAuth").(payload.AuthMiddleware)
+	if userAuth.Role != "super-admin" {
+		panic(exception.UnauthorizedError)
+	}
+	_ = controller.AdminService.FindById(ctx.Context(), userAuth.ID)
+
 	id, err := ctx.ParamsInt("id")
 	exception.PanicIfError(err)
 
@@ -48,6 +55,12 @@ func (controller *AdminController) Delete(ctx *fiber.Ctx) error {
 }
 
 func (controller *AdminController) List(ctx *fiber.Ctx) error {
+	userAuth := ctx.UserContext().Value("userAuth").(payload.AuthMiddleware)
+	if userAuth.Role != "super-admin" {
+		panic(exception.UnauthorizedError)
+	}
+	_ = controller.AdminService.FindById(ctx.Context(), userAuth.ID)
+
 	responses := controller.AdminService.FindAll(ctx.Context())
 	return ctx.JSON(payload.WebResponse{
 		Code:   200,

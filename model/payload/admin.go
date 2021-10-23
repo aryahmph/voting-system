@@ -1,5 +1,10 @@
 package payload
 
+type AuthMiddleware struct {
+	ID   uint32 `json:"id"`
+	Role string `json:"role"`
+}
+
 type CreateAdminRequest struct {
 	Name     string `json:"name" validate:"required,lte=255"`
 	NIM      string `json:"nim" validate:"required,lte=50"`
@@ -13,3 +18,4 @@ type GetAdminResponse struct {
 	PasswordHash string `json:"password_hash"`
 	Role         string `json:"role"`
 }
+
