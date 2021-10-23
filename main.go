@@ -59,6 +59,10 @@ func main() {
 	adminService := service.NewAdminServiceImpl(db, validate, adminRepository)
 	adminController := controller.NewAdminController(adminService, voterService, authService)
 
+	candidateRepository := repository.NewCandidateRepositoryImpl()
+	candidateService := service.NewCandidateServiceImpl(db,candidateRepository)
+	candidateController := controller.NewCandidateController(candidateService)
+
 	app := fiber.New(configuration.NewFiberConfig())
 	app.Use(logger.New())
 	app.Use(recover.New())
@@ -66,6 +70,7 @@ func main() {
 	api := app.Group("/api")
 	admins := api.Group("/admins", authMiddleware)
 	voters := api.Group("/voters")
+	candidates := api.Group("/candidates")
 
 	api.Post("/secret-sessions", adminController.Login)
 
@@ -77,6 +82,8 @@ func main() {
 
 	voters.Get("/:token", voterController.Login)
 	voters.Post("/:token", voterController.Vote)
+
+	candidates.Get("/count", candidateController.Count)
 
 	err = app.Listen(":8080")
 	exception.PanicIfError(err)
