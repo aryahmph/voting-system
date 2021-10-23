@@ -19,3 +19,15 @@ type GetAdminResponse struct {
 	Role         string `json:"role"`
 }
 
+type LoginAdminRequest struct {
+	NIM      string `json:"nim" validate:"required,lte=50"`
+	Password string `json:"password" validate:"required"`
+}
+
+type LoginAdminResponse struct {
+	ID    uint32 `json:"id"`
+	Name  string `json:"name"`
+	NIM   string `json:"nim"`
+	Role  string `json:"role"`
+	Token string `json:"token"`
+}

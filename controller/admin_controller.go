@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"log"
 	"net/http"
 	"voting-system/model/payload"
 	"voting-system/pkg/exception"
@@ -66,5 +67,45 @@ func (controller *AdminController) List(ctx *fiber.Ctx) error {
 		Code:   200,
 		Status: http.StatusText(200),
 		Data:   responses,
+	})
+}
+
+func (controller *AdminController) Get(ctx *fiber.Ctx) error {
+	userAuth := ctx.UserContext().Value("userAuth").(payload.AuthMiddleware)
+	if userAuth.Role != "super-admin" && userAuth.Role != "admin" {
+		log.Println(userAuth.Role)
+		panic(exception.UnauthorizedError)
+	}
+
+	id, err := ctx.ParamsInt("id")
+	exception.PanicIfError(err)
+	if userAuth.ID != uint32(id) {
+		log.Println(userAuth.ID, id)
+		panic(exception.UnauthorizedError)
+	}
+	response := controller.AdminService.FindById(ctx.Context(), userAuth.ID)
+
+	return ctx.JSON(payload.WebResponse{
+		Code:   200,
+		Status: http.StatusText(200),
+		Data:   response,
+	})
+}
+
+func (controller *AdminController) Login(ctx *fiber.Ctx) error {
+	var request payload.LoginAdminRequest
+	err := ctx.BodyParser(&request)
+	exception.PanicIfError(err)
+
+	response := controller.AdminService.Login(ctx.Context(), request)
+
+	token, err := controller.AuthService.GenerateToken(response.ID, response.Role)
+	exception.PanicIfError(err)
+	response.Token = token
+
+	return ctx.JSON(payload.WebResponse{
+		Code:   200,
+		Status: http.StatusText(200),
+		Data:   response,
 	})
 }

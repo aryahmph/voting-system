@@ -26,7 +26,7 @@ func (service *AuthServiceImpl) GenerateToken(id uint32, role string) (string, e
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedString, err := token.SignedString([]byte(service.JWTConfig.SignatureKey))
+	signedString, err := token.SignedString(service.JWTConfig.SignatureKey)
 
 	return signedString, err
 }

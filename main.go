@@ -38,7 +38,7 @@ func main() {
 	exception.PanicIfError(err)
 	jwtConfig := configuration.JWTConfig{
 		ApplicationName:    config.Get("JWT_APPLICATION_NAME"),
-		SignatureKey:       config.Get("JWT_SIGNATURE_KEY"),
+		SignatureKey:       []byte(config.Get("JWT_SIGNATURE_KEY")),
 		ExpirationDuration: expirationConfig,
 	}
 
@@ -59,8 +59,11 @@ func main() {
 	api := app.Group("/api")
 	admins := api.Group("/admins", authMiddleware)
 
+	api.Post("/secret-sessions", adminController.Login)
+
 	admins.Post("/", adminController.Create)
 	admins.Get("/", adminController.List)
+	admins.Get("/:id", adminController.Get)
 	admins.Delete("/:id", adminController.Delete)
 
 	err = app.Listen(":8080")

@@ -85,3 +85,25 @@ func (service *AdminServiceImpl) FindById(ctx context.Context, id uint32) payloa
 		Role:         admin.Role,
 	}
 }
+
+func (service *AdminServiceImpl) Login(ctx context.Context, request payload.LoginAdminRequest) payload.LoginAdminResponse {
+	err := service.Validate.Struct(request)
+	exception.PanicIfError(err)
+
+	admin, err := service.AdminRepository.FindByNIM(ctx, service.DB, request.NIM)
+	if err != nil {
+		panic(exception.NotFoundError)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(request.Password))
+	if err != nil {
+		panic(exception.UnauthorizedError)
+	}
+
+	return payload.LoginAdminResponse{
+		ID:    admin.Id,
+		Name:  admin.Name,
+		NIM:   admin.NIM,
+		Role:  admin.Role,
+	}
+}

@@ -10,4 +10,5 @@ type AdminService interface {
 	Delete(ctx context.Context, id uint32)
 	FindAll(ctx context.Context) []payload.GetAdminResponse
 	FindById(ctx context.Context, id uint32) payload.GetAdminResponse
+	Login(ctx context.Context, request payload.LoginAdminRequest) payload.LoginAdminResponse
 }

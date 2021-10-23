@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 	"net/http"
@@ -14,6 +15,7 @@ func NewAuthMiddleware(service service.AuthService) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		authHeader := ctx.Get("Authorization")
 		if !strings.Contains(authHeader, "Bearer") {
+			fmt.Println("error contains")
 			return ctx.Status(http.StatusUnauthorized).JSON(payload.WebResponse{
 				Code:   http.StatusUnauthorized,
 				Status: http.StatusText(http.StatusUnauthorized),
@@ -23,6 +25,7 @@ func NewAuthMiddleware(service service.AuthService) fiber.Handler {
 
 		tokenSlice := strings.Split(authHeader, " ")
 		if len(tokenSlice) != 2 {
+			fmt.Println("error slice")
 			return ctx.Status(http.StatusUnauthorized).JSON(payload.WebResponse{
 				Code:   http.StatusUnauthorized,
 				Status: http.StatusText(http.StatusUnauthorized),
@@ -32,6 +35,7 @@ func NewAuthMiddleware(service service.AuthService) fiber.Handler {
 
 		validateToken, err := service.ValidateToken(tokenSlice[1])
 		if err != nil {
+			fmt.Println("error hehe", err)
 			return ctx.Status(http.StatusUnauthorized).JSON(payload.WebResponse{
 				Code:   http.StatusUnauthorized,
 				Status: http.StatusText(http.StatusUnauthorized),

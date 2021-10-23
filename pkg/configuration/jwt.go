@@ -4,7 +4,7 @@ import "github.com/golang-jwt/jwt"
 
 type JWTConfig struct {
 	ApplicationName    string
-	SignatureKey       string
+	SignatureKey       []byte
 	ExpirationDuration int
 }
 
