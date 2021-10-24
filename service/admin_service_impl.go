@@ -42,15 +42,19 @@ func (service *AdminServiceImpl) Create(ctx context.Context, request payload.Cre
 	}()
 
 	// Hashing password
-	channel := make(chan []byte)
-	defer close(channel)
+	admin := domain.Admin{
+		Name: request.Name,
+		NIM:  request.NIM,
+		Role: "admin",
+	}
+	channel := make(chan string)
 	go func() {
 		passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 		if err != nil {
-			panic(err)
+			fatalErrors <- err
 		}
-		channel <- passwordHash
 		wg.Done()
+		channel <- string(passwordHash)
 	}()
 
 	go func() {
@@ -60,19 +64,13 @@ func (service *AdminServiceImpl) Create(ctx context.Context, request payload.Cre
 
 	select {
 	case <-wgDone:
+		admin.PasswordHash = <-channel
+		close(channel)
 		break
 	case err := <-fatalErrors:
 		close(fatalErrors)
 		panic(err)
 	}
-
-	admin := domain.Admin{
-		Name: request.Name,
-		NIM:  request.NIM,
-		Role: "admin",
-	}
-	admin.PasswordHash = string(<-channel)
-
 	service.AdminRepository.Save(ctx, service.DB, admin)
 }
 

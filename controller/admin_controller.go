@@ -26,7 +26,7 @@ func (controller *AdminController) Create(ctx *fiber.Ctx) error {
 	if userAuth.Role != "super-admin" {
 		panic(exception.UnauthorizedError)
 	}
-	_ = controller.AdminService.FindById(ctx.Context(), userAuth.ID)
+	controller.AdminService.FindById(ctx.Context(), userAuth.ID)
 
 	var request payload.CreateAdminRequest
 	err := ctx.BodyParser(&request)
