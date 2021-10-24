@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 	"net/http"
+	"voting-system/model/domain"
 	"voting-system/model/payload"
 	"voting-system/pkg/exception"
 	"voting-system/service"
@@ -12,10 +13,11 @@ import (
 type VoterController struct {
 	VoterService service.VoterService
 	AuthService  service.AuthService
+	MailService  service.MailService
 }
 
-func NewVoterController(voterService service.VoterService, authService service.AuthService) *VoterController {
-	return &VoterController{VoterService: voterService, AuthService: authService}
+func NewVoterController(voterService service.VoterService, authService service.AuthService, mailService service.MailService) *VoterController {
+	return &VoterController{VoterService: voterService, AuthService: authService, MailService: mailService}
 }
 
 func (controller *VoterController) Vote(ctx *fiber.Ctx) error {
@@ -42,7 +44,15 @@ func (controller *VoterController) Vote(ctx *fiber.Ctx) error {
 		panic(exception.UnauthorizedError)
 	}
 
-	controller.VoterService.Vote(ctx.Context(), request)
+	response := controller.VoterService.Vote(ctx.Context(), request)
+
+	msg := ``
+	sendMail := domain.SendMail{
+		Subject: "[PEMIRA] Berhasil melakukan Pemilihan Gubernur Fasilkom 2021",
+		Message: msg,
+	}
+	sendMail.To = append(sendMail.To, response.Email)
+	go controller.MailService.Send(sendMail)
 
 	return ctx.JSON(payload.WebResponse{
 		Code:   200,

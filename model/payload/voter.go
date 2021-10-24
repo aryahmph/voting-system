@@ -15,12 +15,20 @@ type GenerateVoteRequest struct {
 }
 
 type GenerateVoteResponse struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
 	Token string `json:"token"`
 }
 
 type VoteRequest struct {
 	ID          uint32 `validate:"required"`
 	CandidateID uint32 `json:"candidate_id" validate:"required"`
+}
+
+type VoteResponse struct {
+	Name  string `json:"name"`
+	NIM   string `json:"nim"`
+	Email string `json:"email"`
 }
 
 type VoterLoginResponse struct {

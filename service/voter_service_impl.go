@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	"voting-system/model/payload"
@@ -28,7 +27,6 @@ func (service *VoterServiceImpl) GenerateVote(ctx context.Context, request paylo
 	// Check NIM
 	voter, err := service.VoterRepository.FindByNIM(ctx, service.DB, request.NIM)
 	if err != nil {
-		fmt.Println(err)
 		panic(exception.NotFoundError)
 	}
 	// Check has voted or not
@@ -43,10 +41,14 @@ func (service *VoterServiceImpl) GenerateVote(ctx context.Context, request paylo
 	// Mark admin who generate
 	service.VoterRepository.Update(ctx, service.DB, voter.ID, request.AdminID)
 
-	return payload.GenerateVoteResponse{Token: token}
+	return payload.GenerateVoteResponse{
+		Name:  voter.Name,
+		Email: voter.Email,
+		Token: token,
+	}
 }
 
-func (service *VoterServiceImpl) Vote(ctx context.Context, request payload.VoteRequest) {
+func (service *VoterServiceImpl) Vote(ctx context.Context, request payload.VoteRequest) payload.VoteResponse {
 	err := service.Validate.Struct(request)
 	exception.PanicIfError(err)
 
@@ -60,6 +62,11 @@ func (service *VoterServiceImpl) Vote(ctx context.Context, request payload.VoteR
 	}
 
 	service.VoterRepository.UpdateCandidate(ctx, service.DB, request.ID, request.CandidateID)
+	return payload.VoteResponse{
+		Name:  voter.Name,
+		NIM:   voter.NIM,
+		Email: voter.Email,
+	}
 }
 
 func (service *VoterServiceImpl) FindByID(ctx context.Context, id uint32) payload.VoterLoginResponse {

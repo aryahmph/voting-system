@@ -17,14 +17,15 @@ func NewAuthServiceImpl(JWTConfig configuration.JWTConfig) *AuthServiceImpl {
 
 func (service *AuthServiceImpl) GenerateToken(id uint32, role string) (string, error) {
 	// Check is election has been closed or not
-	//if service.JWTConfig.ClosedAt <= time.Now().Unix() {
+	now := time.Now()
+	//if service.JWTConfig.ClosedAt <= now.Unix() {
 	//	panic(exception.MethodNotAllowedError)
 	//}
 
 	claims := configuration.AuthClaims{
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    service.JWTConfig.ApplicationName,
-			ExpiresAt: time.Now().Add(time.Duration(service.JWTConfig.ExpirationDuration) * time.Minute).Unix(),
+			ExpiresAt: now.Add(time.Duration(service.JWTConfig.ExpirationDuration) * time.Minute).Unix(),
 		},
 		ID:   id,
 		Role: role,

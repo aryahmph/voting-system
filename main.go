@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -45,22 +46,37 @@ func main() {
 		ClosedAt:           int64(closedAt),
 	}
 
+	// Mail Config
+	mailEmail := config.Get("MAIL_EMAIL")
+	mailName := config.Get("MAIL_NAME")
+	smtpPort, err := strconv.Atoi(config.Get("MAIL_SMTP_PORT"))
+	exception.PanicIfError(err)
+	mailConfig := configuration.MailConfig{
+		SmtpHost: config.Get("MAIL_SMTP_HOST"),
+		Name:     fmt.Sprintf("%s <%s>", mailName, mailEmail),
+		Email:    mailEmail,
+		Password: config.Get("MAIL_PASSWORD"),
+		SmtpPort: smtpPort,
+	}
+
 	db := database.NewDatabase(dbConfig)
 	validate := validator.New()
+
+	mailService := service.NewMailServiceImpl(mailConfig)
 
 	authService := service.NewAuthServiceImpl(jwtConfig)
 	authMiddleware := middleware.NewAuthMiddleware(authService)
 
 	voterRepository := repository.NewVoterRepositoryImpl()
 	voterService := service.NewVoterServiceImpl(db, validate, voterRepository, authService)
-	voterController := controller.NewVoterController(voterService, authService)
+	voterController := controller.NewVoterController(voterService, authService, mailService)
 
 	adminRepository := repository.NewAdminRepositoryImpl()
 	adminService := service.NewAdminServiceImpl(db, validate, adminRepository)
-	adminController := controller.NewAdminController(adminService, voterService, authService)
+	adminController := controller.NewAdminController(adminService, voterService, authService, mailService)
 
 	candidateRepository := repository.NewCandidateRepositoryImpl()
-	candidateService := service.NewCandidateServiceImpl(db,candidateRepository)
+	candidateService := service.NewCandidateServiceImpl(db, candidateRepository)
 	candidateController := controller.NewCandidateController(candidateService)
 
 	app := fiber.New(configuration.NewFiberConfig())

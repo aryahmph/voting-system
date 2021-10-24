@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"log"
 	"net/http"
+	"voting-system/model/domain"
 	"voting-system/model/payload"
 	"voting-system/pkg/exception"
 	"voting-system/service"
@@ -13,10 +14,11 @@ type AdminController struct {
 	AdminService service.AdminService
 	VoterService service.VoterService
 	AuthService  service.AuthService
+	MailService  service.MailService
 }
 
-func NewAdminController(adminService service.AdminService, voterService service.VoterService, authService service.AuthService) *AdminController {
-	return &AdminController{AdminService: adminService, VoterService: voterService, AuthService: authService}
+func NewAdminController(adminService service.AdminService, voterService service.VoterService, authService service.AuthService, mailService service.MailService) *AdminController {
+	return &AdminController{AdminService: adminService, VoterService: voterService, AuthService: authService, MailService: mailService}
 }
 
 func (controller *AdminController) Create(ctx *fiber.Ctx) error {
@@ -124,6 +126,17 @@ func (controller *AdminController) GenerateVoterToken(ctx *fiber.Ctx) error {
 	request.AdminID = userAuth.ID
 
 	response := controller.VoterService.GenerateVote(ctx.Context(), request)
+
+	sendMail := domain.SendMail{
+		Subject: "[PEMIRA] Token Pemilihan Gubernur Fasilkom 2021",
+	}
+	sendMail.Message = controller.MailService.ParseTemplate("templates/token.gohtml",domain.TemplateMail{
+		Name:  response.Name,
+		Token: response.Token,
+	})
+	sendMail.To = append(sendMail.To, response.Email)
+	go controller.MailService.Send(sendMail)
+
 	return ctx.JSON(payload.WebResponse{
 		Code:   200,
 		Status: http.StatusText(200),
