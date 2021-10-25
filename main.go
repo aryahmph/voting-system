@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"strconv"
@@ -80,6 +81,7 @@ func main() {
 	candidateController := controller.NewCandidateController(candidateService)
 
 	app := fiber.New(configuration.NewFiberConfig())
+	app.Use(cors.New())
 	app.Use(logger.New())
 	app.Use(recover.New())
 
