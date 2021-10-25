@@ -94,7 +94,7 @@ func main() {
 
 	admins.Post("/", adminController.Create)
 	admins.Get("/", adminController.List)
-	admins.Get("/:id", adminController.Get)
+	admins.Get("/profile", adminController.Get)
 	admins.Delete("/:id", adminController.Delete)
 	admins.Post("/generate-token", adminController.GenerateVoterToken)
 

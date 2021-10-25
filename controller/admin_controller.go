@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"log"
 	"net/http"
 	"voting-system/model/domain"
 	"voting-system/model/payload"
@@ -76,16 +75,9 @@ func (controller *AdminController) List(ctx *fiber.Ctx) error {
 func (controller *AdminController) Get(ctx *fiber.Ctx) error {
 	userAuth := ctx.UserContext().Value("userAuth").(payload.AuthMiddleware)
 	if userAuth.Role != "super-admin" && userAuth.Role != "admin" {
-		log.Println(userAuth.Role)
 		panic(exception.UnauthorizedError)
 	}
 
-	id, err := ctx.ParamsInt("id")
-	exception.PanicIfError(err)
-	if userAuth.ID != uint32(id) {
-		log.Println(userAuth.ID, id)
-		panic(exception.UnauthorizedError)
-	}
 	response := controller.AdminService.FindById(ctx.Context(), userAuth.ID)
 
 	return ctx.JSON(payload.WebResponse{
