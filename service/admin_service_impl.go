@@ -119,7 +119,7 @@ func (service *AdminServiceImpl) Login(ctx context.Context, request payload.Logi
 
 	admin, err := service.AdminRepository.FindByNIM(ctx, service.DB, request.NIM)
 	if err != nil {
-		panic(exception.NotFoundError)
+		panic(exception.UnauthorizedError)
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(request.Password))
