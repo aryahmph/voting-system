@@ -5,7 +5,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
-	"sync"
 	"voting-system/model/domain"
 	"voting-system/model/payload"
 	"voting-system/pkg/exception"
@@ -26,50 +25,21 @@ func (service *AdminServiceImpl) Create(ctx context.Context, request payload.Cre
 	err := service.Validate.Struct(request)
 	exception.PanicIfError(err)
 
-	fatalErrors := make(chan error)
-	wgDone := make(chan bool)
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-
 	// Check NIM
-	go func() {
-		_, err := service.AdminRepository.FindByNIM(ctx, service.DB, request.NIM)
-		if err == nil {
-			fatalErrors <- exception.AlreadyExistError
-		}
-		wg.Done()
-	}()
+	_, err = service.AdminRepository.FindByNIM(ctx, service.DB, request.NIM)
+	if err == nil {
+		panic(exception.AlreadyExistError)
+	}
 
 	// Hashing password
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	exception.PanicIfError(err)
+
 	admin := domain.Admin{
-		Name: request.Name,
-		NIM:  request.NIM,
-		Role: "admin",
-	}
-	channel := make(chan string)
-	go func() {
-		passwordHash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-		if err != nil {
-			fatalErrors <- err
-		}
-		wg.Done()
-		channel <- string(passwordHash)
-	}()
-
-	go func() {
-		wg.Wait()
-		close(wgDone)
-	}()
-
-	select {
-	case <-wgDone:
-		admin.PasswordHash = <-channel
-		close(channel)
-		break
-	case err := <-fatalErrors:
-		close(fatalErrors)
-		panic(err)
+		Name:         request.Name,
+		NIM:          request.NIM,
+		PasswordHash: string(passwordHash),
+		Role:         "admin",
 	}
 	service.AdminRepository.Save(ctx, service.DB, admin)
 }
