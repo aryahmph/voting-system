@@ -22,6 +22,7 @@ func (service *CandidateServiceImpl) CountVotes(ctx context.Context) []payload.C
 	for _, candidate := range candidates {
 		responses = append(responses, payload.CountVotesResponse{
 			ID:    candidate.ID,
+			Name:  candidate.Name,
 			Votes: candidate.VotesCount,
 		})
 	}
