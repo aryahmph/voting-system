@@ -5,6 +5,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"time"
 	"voting-system/pkg/configuration"
+	"voting-system/pkg/exception"
 )
 
 type AuthServiceImpl struct {
@@ -18,9 +19,9 @@ func NewAuthServiceImpl(JWTConfig configuration.JWTConfig) *AuthServiceImpl {
 func (service *AuthServiceImpl) GenerateToken(id uint32, role string) (string, error) {
 	// Check is election has been closed or not
 	now := time.Now()
-	//if service.JWTConfig.ClosedAt <= now.Unix() {
-	//	panic(exception.MethodNotAllowedError)
-	//}
+	if service.JWTConfig.StartedAt >= now.Unix() && service.JWTConfig.ClosedAt <= now.Unix() {
+		panic(exception.MethodNotAllowedError)
+	}
 
 	claims := configuration.AuthClaims{
 		StandardClaims: jwt.StandardClaims{

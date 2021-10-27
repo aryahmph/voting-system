@@ -8,6 +8,7 @@ type JWTConfig struct {
 	ApplicationName    string
 	SignatureKey       []byte
 	ExpirationDuration int
+	StartedAt          int64
 	ClosedAt           int64
 }
 
