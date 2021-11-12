@@ -46,8 +46,8 @@ func (service *AdminServiceImpl) Create(ctx context.Context, request payload.Cre
 
 func (service *AdminServiceImpl) Delete(ctx context.Context, id uint32) {
 	// Check ID
-	_, err := service.AdminRepository.FindById(ctx, service.DB, id)
-	if err != nil {
+	admin, err := service.AdminRepository.FindById(ctx, service.DB, id)
+	if err != nil || admin.Role == "super-admin" {
 		panic(exception.NotFoundError)
 	}
 
