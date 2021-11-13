@@ -58,12 +58,14 @@ func (service *AdminServiceImpl) FindAll(ctx context.Context) []payload.GetAdmin
 	admins := service.AdminRepository.FindAll(ctx, service.DB)
 	var responses []payload.GetAdminResponse
 	for _, admin := range admins {
-		responses = append(responses, payload.GetAdminResponse{
-			ID:   admin.Id,
-			Name: admin.Name,
-			NIM:  admin.NIM,
-			Role: admin.Role,
-		})
+		if admin.Role == "admin" {
+			responses = append(responses, payload.GetAdminResponse{
+				ID:   admin.Id,
+				Name: admin.Name,
+				NIM:  admin.NIM,
+				Role: admin.Role,
+			})
+		}
 	}
 	return responses
 }
