@@ -103,6 +103,6 @@ func main() {
 
 	candidates.Get("/count", candidateController.Count)
 
-	err = app.Listen(":8080")
+	err = app.ListenTLS(":8080", "./cert.pem", "./cert.key")
 	exception.PanicIfError(err)
 }
