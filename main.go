@@ -40,11 +40,14 @@ func main() {
 	exception.PanicIfError(err)
 	closedAt, err := strconv.Atoi(config.Get("CLOSED_AT"))
 	exception.PanicIfError(err)
+	startedAt, err := strconv.Atoi(config.Get("CLOSED_AT"))
+	exception.PanicIfError(err)
 	jwtConfig := configuration.JWTConfig{
 		ApplicationName:    config.Get("JWT_APPLICATION_NAME"),
 		SignatureKey:       []byte(config.Get("JWT_SIGNATURE_KEY")),
 		ExpirationDuration: expirationConfig,
 		ClosedAt:           int64(closedAt),
+		StartedAt:          int64(startedAt),
 	}
 
 	// Mail Config
